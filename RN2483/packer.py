@@ -33,6 +33,8 @@ def Pack_Str(string):
         length = str(0) + str(0) + str(length)
     elif length >= 10 and length < 100:
         length = str(0)  + str(length)
+    else:
+        length = str(length)
 
     payload = SOH + length.encode("hex") + data + CRLF
     print("RAW: " + payload)
