@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: UTF-8 -*- 
 #+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 #|R|a|s|p|b|e|r|r|y|P|i|.|c|o|m|.|t|w|
 #+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -17,12 +18,19 @@
 #            Serial Port? /dev/ttyAMA0
 #
 
+
 import serial
 import time
 import re
+import json
+import packer
 
 BAUDRATE = 57600               # the baud rate we talk to the microchip RN2483
-TIMEOUT = 1
+MAX_PAYLOAD_LENGTH = 121
+
+#
+# start here
+#
 
 try:
     input = raw_input
@@ -37,77 +45,77 @@ ser = serial.Serial(serial_port, BAUDRATE)
 if ser.isOpen() == False:
     ser.open()
 
-# The default settings for the UART interface are 
-# 57600 bps, 8 bits, no parity, 1 Stop bit, no flow control. 
+# The default settings for the UART interface are
+# 57600 bps, 8 bits, no parity, 1 Stop bit, no flow control.
 ser.bytesize = 8
 ser.parity   = "N"
 ser.stopbits = 1
 ser.timeout  = 5
 
-print("Device Opening: " + str(ser.isOpen()))
+
 print('----------------------------------')
 
-# signed decimal number representing the transceiver output power, 
+print('cmd> radio cw off')
+ser.write(b'radio cw off\r\n')
+print(str(ser.readline()))
+
+# signed decimal number representing the transceiver output power,
 # from -3 to 15.
-print('radio set pwr 14')
+print('cmd> radio set pwr 14')
 ser.write(b'radio set pwr 14\r\n')
 print(str(ser.readline()))
 
-# decimal representing the operating radio bandwidth, in kHz. 
+# decimal representing the operating radio bandwidth, in kHz.
 # Parameter values can be: 125, 250, 500.
-print('radio set bw 250')
+print('cmd> radio set bw 250')
 ser.write(b'radio set bw 250\r\n')
 print(str(ser.readline()))
 
-# decimal representing the frequency, 
+# decimal representing the frequency,
 # from 433000000 to 434800000 or from 863000000 to 870000000, in Hz.
-print('radio set freq 868100000')
+print('cmd> radio set freq 868100000')
 ser.write(b'radio set freq 868100000\r\n')
 print(str(ser.readline()))
 
-# pauses the LoRaWAN stack functionality to allow transceiver (radio) configuration 
+# pauses the LoRaWAN stack functionality to allow transceiver (radio) configuration
 # must be called before any radio transmission or reception
-print('mac pause')
+print('cmd> mac pause')
 ser.write(b'mac pause\r\n')
 print(str(ser.readline()))
 
-#print('radio set wdt 2000')
-#ser.write(b'radio set wdt 2000\r\n')
-#print(str(ser.readline()))
-
-# puts the radio into continuous Receive mode.
-# from 0 to 65535, set '0' in order to enable the Continuous Reception mode
-print('radio rx 0')
-ser.write(b'radio rx 0\r\n')
+print('cmd> radio set wdt 0')
+ser.write(b'radio set wdt 0\r\n')
 print(str(ser.readline()))
+
+print('----------------------------------')
 
 try:
     while True:
-        response = ser.readline()
+        ser.write(b'radio rx 0\r\n')
+        ret = ser.readline()
 
-        # for python3
-        try:
-            utf8_response = str(response, encoding="UTF-8").strip()
+        if ret == "ok" or "radio_tx_ok" :
 
-            if re.match('^radio_rx', utf8_response):
-                print('radio rx 0')
-                ser.write(b'radio rx 0\r\n')
+            payload = ser.readline()
 
-                text = utf8_response.split("  ", 1)[1]
-                print("receive: " + text + "\r\n")
+            if re.match('^radio_rx', str(payload).strip()):
+                data = payload.split("  ", 1)[1]
+                _length, _data = packer.Unpack_Str(data)
+                print("Time: " + str(time.ctime()))
+                print("Receive: " + _data) 
 
-        # for python2
-        except:
-            if re.match('^radio_rx', str(response).strip()):
-                print('radio rx 0')
-                ser.write(b'radio rx 0\r\n')
+                ser.write(b'radio get snr\r\n')
+                snr = ser.readline()
+                print("SNR: " + str(snr))
 
-                text = response.split("  ", 1)[1]
-                print("receive: " + text + "\r\n")
-
-    time.sleep(1)
+                time.sleep(0.1 + 0.02 * int(_length))
+                print('radio tx ACK')
+                _length, _ack = packer.Pack_Str(packer.ACK)
+                ack = "radio tx " + str(_ack)
+                ser.write(ack)
+                ret = ser.readline()
+                print('----------------------------------')
 
 finally:
     ser.close()
-
 
