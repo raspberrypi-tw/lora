@@ -3,7 +3,7 @@
 #+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 #|R|a|s|p|b|e|r|r|y|P|i|.|c|o|m|.|t|w|
 #+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-# Copyright (c) 2016, raspberrypi.com.tw
+# Copyright (c) 2018, raspberrypi.com.tw
 # All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -23,7 +23,7 @@ CRLF = "\r\n"  # 0x32 0x41 0x33 0x31
 # pack string to customized payload
 #
 # payload: [SOH]    [LENGTH]   [PAYLOAD]          [CRLF]
-#          2 bytes  6 bytes    length * 2 bytes   4 bytes
+#          4 bytes  6 bytes    length * 2 bytes   4 bytes
 #
 def Pack_Str(string):
     data   = string.encode("hex")
