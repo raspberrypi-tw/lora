@@ -69,8 +69,8 @@ def Init_Serial(ser):
         #print('cmd> radio set freq 868100000')
         #ser.write(b'radio set freq 868100000\r\n')
         #print(str(ser.readline()))
-        print('cmd> radio set freq 434100000')
-        ser.write(b'radio set freq 434100000\r\n')
+        print('cmd> radio set freq 433000000')
+        ser.write(b'radio set freq 433000000\r\n')
         print(str(ser.readline()))
 
         print('cmd> mac pause')

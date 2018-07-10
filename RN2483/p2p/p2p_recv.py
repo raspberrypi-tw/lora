@@ -35,7 +35,7 @@ print('cmd> radio set pwr 15')
 lora.write(b'radio set pwr 15\r\n')
 print(str(lora.readline()))
 
-print('cmd> radio bw 125')
+print('cmd> radio set bw 125')
 lora.write(b'radio set bw 125\r\n')
 print(str(lora.readline()))
 
@@ -43,9 +43,10 @@ print('cmd> radio sf 12')
 lora.write(b'radio set sf sf12\r\n')
 print(str(lora.readline()))
 
-print('cmd> radio freq 434100000')
-lora.write(b'radio set freq 434100000\r\n')
+print('cmd> radio set freq 433000000')
+lora.write(b'radio set freq 433000000\r\n')
 print(str(lora.readline()))
+
 lora.write(b'mac pause\r\n')
 print(str(lora.readline()))
 
